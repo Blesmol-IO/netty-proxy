@@ -1,0 +1,29 @@
+# Configure Repositories
+-plugin.1.BlesmolNetty: \
+	aQute.bnd.repository.p2.provider.P2Repository; \
+		name = BlesmolNetty; \
+		url = ${fileuri;${build}}/cache/blesmolnetty
+
+-plugin.2.Local: \
+	aQute.bnd.deployer.repository.LocalIndexedRepo; \
+		name = Local; \
+		pretty = true; \
+		local = ${build}/local
+
+-plugin.3.Templates: \
+	aQute.bnd.deployer.repository.LocalIndexedRepo; \
+		name = Templates; \
+		pretty = true; \
+		local = ${build}/templates
+
+-plugin.4.Release: \
+	aQute.bnd.deployer.repository.LocalIndexedRepo; \
+		name = Release; \
+		pretty = true; \
+		local = ${build}/release
+
+-releaserepo: Release
+-baselinerepo: Release
+
+# JUnit
+junit: org.apache.servicemix.bundles.junit; version=4.12

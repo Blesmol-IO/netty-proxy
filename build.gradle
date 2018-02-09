@@ -1,0 +1,38 @@
+// Available to customize the build
+plugins {
+	id "de.undercouch.download" version "3.3.0"
+}
+apply plugin: 'java'
+
+task wrapper(type: Wrapper) {
+  jarFile = rootProject.file('.gradle-wrapper/gradle-wrapper.jar')
+}
+
+// download tasks
+import de.undercouch.gradle.tasks.download.Download
+import de.undercouch.gradle.tasks.download.Verify
+
+task downloadBlesmolNetty(type: Download) {
+    src 'https://github.com/Blesmol-IO/netty-osgi/releases/download/0.1.0/updatesite.zip'
+    dest "${bnd_cnf}/cache/p2drops/blesmol-netty-osgi-updatesite-0.1.0.zip"
+    onlyIfModified true
+}
+
+// might not be needed if bnd checks hashes
+task verifyBlesmolNetty(type: Verify, dependsOn: downloadBlesmolNetty) {
+    src new File("${bnd_cnf}/cache/p2drops", 'blesmol-netty-osgi-updatesite-0.1.0.zip')
+    algorithm 'MD5'
+    // checksum cannot be a closure
+    checksum '77fbb5c961d5dd427d1bad6e2f3ce9dd'
+}
+
+task unzipBlesmolNetty(dependsOn: verifyBlesmolNetty, type: Copy) {
+    from zipTree(downloadBlesmolNetty.dest)
+    into "${bnd_cnf}/cache/blesmolnetty"
+	doLast {
+	    bndWorkspace.repositories.findResult{ it.name == 'BlesmolNetty' ? it : null }.refresh()
+	    println 'Refreshed BlesmolNetty'
+	}
+}
+
+build.dependsOn unzipBlesmolNetty
