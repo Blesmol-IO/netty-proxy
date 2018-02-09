@@ -1,8 +1,10 @@
 # Configure Repositories
--plugin.1.BlesmolNetty: \
-	aQute.bnd.repository.p2.provider.P2Repository; \
-		name = BlesmolNetty; \
-		url = ${fileuri;${build}}/cache/blesmolnetty
+# Configure Repositories
+-plugin.1.Central = \
+	aQute.bnd.repository.maven.provider.MavenBndRepository; \
+		releaseUrl=https://repo.maven.apache.org/maven2/; \
+		index=${.}/central.maven; \
+		name="Central"
 
 -plugin.2.Local: \
 	aQute.bnd.deployer.repository.LocalIndexedRepo; \
@@ -21,6 +23,11 @@
 		name = Release; \
 		pretty = true; \
 		local = ${build}/release
+
+-plugin.5.BlesmolNetty: \
+	aQute.bnd.repository.p2.provider.P2Repository; \
+		name = BlesmolNetty; \
+		url = ${fileuri;${build}}/cache/blesmolnetty
 
 -releaserepo: Release
 -baselinerepo: Release
