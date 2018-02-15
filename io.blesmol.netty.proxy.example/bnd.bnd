@@ -1,0 +1,18 @@
+-buildpath: \
+	osgi.annotation;version=6.0.1,\
+	osgi.core;version=6.0,\
+	osgi.cmpn;version=6.0,\
+	io.blesmol.netty.api;version=0.1,\
+	io.blesmol.netty.proxy.api;version=latest
+
+-testpath: \
+	${junit}
+
+javac.source: 1.8
+javac.target: 1.8
+
+Bundle-Version: 0.1.0.${tstamp}
+Private-Package: io.blesmol.netty.proxy.example
+-runrequires: \
+	osgi.identity;filter:='(osgi.identity=io.blesmol.netty.proxy.example)',\
+	osgi.identity;filter:='(osgi.identity=io.blesmol.netty.proxy.provider)'

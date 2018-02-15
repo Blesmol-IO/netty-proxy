@@ -23,7 +23,7 @@ task verifyBlesmolNetty(type: Verify, dependsOn: downloadBlesmolNetty) {
     src new File("${bnd_cnf}/cache/p2drops", 'blesmol-netty-osgi-updatesite-0.1.0.zip')
     algorithm 'MD5'
     // checksum cannot be a closure
-    checksum '77fbb5c961d5dd427d1bad6e2f3ce9dd'
+    checksum 'd80f6c5dff7d648e8932fab53b10b10e'
 }
 
 task unzipBlesmolNetty(dependsOn: verifyBlesmolNetty, type: Copy) {
