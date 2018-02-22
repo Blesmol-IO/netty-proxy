@@ -20,19 +20,15 @@ public interface Configuration {
 		String handlerName() default FRONTEND_HANDLER_NAME;
 
 		String channelId();
-
-		String destinationHost();
-
-		int destinationPort();
 	}
 
 	String HTTP_CONNECT_PROXY_SERVER_PID = "io.blesmol.netty.proxy.api.HttpConnectProxyServer";
 	String HTTP_CONNECT_PROXY_SERVER_NAME = "httpConnectProxyServer";
 
 	@interface HttpConnectProxyServer {
-		String appName();
+		String handlerName() default HTTP_CONNECT_PROXY_SERVER_NAME;
 
-		String handleName() default HTTP_CONNECT_PROXY_SERVER_NAME;
+		String channelId();
 
 		// Maximum size of HTTP CONNECT request
 		int maxContentLength() default 4096;

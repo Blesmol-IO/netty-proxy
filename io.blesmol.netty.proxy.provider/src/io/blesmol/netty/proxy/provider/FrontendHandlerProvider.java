@@ -2,6 +2,8 @@ package io.blesmol.netty.proxy.provider;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.Hashtable;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -33,13 +35,17 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
+import io.netty.handler.codec.http.HttpRequestEncoder;
 
 // Copyright 2012 The Netty Project and Coastal Hacking
 @Component(configurationPid = Configuration.FRONTEND_HANDLER_PID, configurationPolicy = ConfigurationPolicy.REQUIRE, service = ChannelHandler.class)
 public class FrontendHandlerProvider extends ChannelInboundHandlerAdapter implements FrontendHandler {
 
 	private volatile org.osgi.service.cm.Configuration backendConfig;
+	private final Deferred<InetSocketAddress> deferredSocketAddress = new Deferred<>();
+	private final Promise<InetSocketAddress> promisedSocketAddress = deferredSocketAddress.getPromise();
 
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 	private final Deferred<Void> deferredClosed = new Deferred<>();
@@ -80,12 +86,17 @@ public class FrontendHandlerProvider extends ChannelInboundHandlerAdapter implem
 		this.config = config;
 
 		// Sometime in the future, start the client via the configured backend handler
-
-		deferredFuture
-				.resolveWith(createConfiguration()
-						.then((p1) -> startClient(promisedChannel.getValue(), promisedHandler.getValue())))
-				.then((p2) -> sendThisChannelToOtherChannelAsUserEvent(promisedChannel.getValue(),
-						promisedFuture.getValue().channel()));
+		promisedSocketAddress
+		.then((p0) -> createConfiguration(p0.getValue()))
+		.then((p1) -> startClient(promisedSocketAddress.getValue(), promisedChannel.getValue(), promisedHandler.getValue()))
+		.then((p2) -> sendThisChannelToOtherChannelAsUserEvent(promisedChannel.getValue(), promisedFuture.getValue().channel()));
+		
+		
+//		deferredFuture
+//		.resolveWith(promisedSocketAddress
+//				.then((p0) -> createConfiguration(p0.getValue()))
+//				.then((p1) -> startClient(promisedChannel.getValue(), promisedHandler.getValue()))
+//				.then((p2) -> sendThisChannelToOtherChannelAsUserEvent(promisedChannel.getValue(), promisedFuture.getValue().channel())));
 
 		// deferredFuture.resolveWith(promisedHandler.then((p) ->
 		// startClient(promisedChannel.getValue(), p.getValue())));
@@ -106,12 +117,20 @@ public class FrontendHandlerProvider extends ChannelInboundHandlerAdapter implem
 	}
 
 	@Override
+	public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+		if (evt instanceof InetSocketAddress) {
+			deferredSocketAddress.resolve((InetSocketAddress)evt);
+			System.out.println("Received socket address to connect to.");
+		}
+	}
+
+	@Override
 	public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
 		// TODO Auto-generated method stub
 		super.handlerRemoved(ctx);
 	}
 
-	private Promise<Void> createConfiguration() {
+	private Promise<Void> createConfiguration(InetSocketAddress socketAddress) {
 
 		Deferred<Void> result = new Deferred<>();
 
@@ -122,8 +141,8 @@ public class FrontendHandlerProvider extends ChannelInboundHandlerAdapter implem
 				try {
 					backendConfig = configAdmin.createFactoryConfiguration(Configuration.BACKEND_HANDLER_PID, "?");
 					Hashtable<String, Object> props = new Hashtable<>();
-					props.put(Property.BackendHandler.DESTINATION_HOST, config.destinationHost());
-					props.put(Property.BackendHandler.DESTINATION_PORT, config.destinationPort());
+					props.put(Property.BackendHandler.DESTINATION_HOST, socketAddress.getHostName());
+					props.put(Property.BackendHandler.DESTINATION_PORT, socketAddress.getPort());
 					props.put(Property.BackendHandler.HANDLER_NAME, Configuration.BACKEND_HANDLER_NAME);
 
 					backendConfig.update(props);
@@ -144,20 +163,29 @@ public class FrontendHandlerProvider extends ChannelInboundHandlerAdapter implem
 	private Promise<Channel> sendThisChannelToOtherChannelAsUserEvent(Channel thisChannel, Channel otherChannel) {
 
 		otherChannel.pipeline().fireUserEventTriggered(thisChannel);
-		System.out.println("Firing user event");
+		System.out.println("Frontend sending channel to backend via user event");
 		return Promises.resolved(thisChannel);
 	}
 
-	private Promise<ChannelFuture> startClient(Channel inboundChannel, BackendHandler backendHandler) {
-
-		final Deferred<ChannelFuture> deferred = new Deferred<>();
+	private Promise<ChannelFuture> startClient(InetSocketAddress socketAddress, Channel inboundChannel, BackendHandler backendHandler) {
 
 		executor.execute(new Runnable() {
 
 			@Override
 			public void run() {
-				System.out.println("Starting netty client");
-				bootstrap.group(inboundChannel.eventLoop()).channel(inboundChannel.getClass()).handler(backendHandler)
+				System.out.println("Starting netty client for backend");
+				bootstrap.group(inboundChannel.eventLoop()).channel(inboundChannel.getClass())
+				.handler(new ChannelInitializer<Channel>() {
+
+					@Override
+					protected void initChannel(Channel ch) throws Exception {
+						ch.pipeline().addLast(new HttpRequestEncoder());
+						ch.pipeline().addLast(backendHandler);
+						
+					}
+				})
+//				.handler(backendHandler)
+				
 						// .handler(new ChannelInitializer<Channel>() {
 						// @Override
 						// protected void initChannel(Channel ch) throws Exception {
@@ -184,22 +212,21 @@ public class FrontendHandlerProvider extends ChannelInboundHandlerAdapter implem
 						// https://stackoverflow.com/a/28294255
 						.option(ChannelOption.AUTO_READ, false);
 
-				final ChannelFuture outboundFuture = bootstrap.connect(config.destinationHost(),
-						config.destinationPort());
+				final ChannelFuture outboundFuture = bootstrap.connect(socketAddress);
 				outboundFuture.addListener(new ChannelFutureListener() {
 
 					@Override
 					public void operationComplete(ChannelFuture future) throws Exception {
 						if (future.isSuccess()) {
 							// Defer read until connection is successful
-							deferred.resolve(future);
+							System.out.println("Resolving outbound future");
 							future.channel().config().setAutoRead(true);
-							// inboundChannel.read();
-							// future.channel().config().setAutoRead(true);
-							System.out.println("Channel is active, reading");
+							deferredFuture.resolve(future);
+
+							System.out.println("Backend channel is active, reading");
 						} else {
-							System.out.println("Channel was not activated correctly!");
-							deferred.fail(new IllegalStateException("Channel was not opened successfully"));
+							System.out.println("Backend channel was not activated correctly!");
+							deferredFuture.fail(new IllegalStateException("Channel was not opened successfully"));
 							inboundChannel.close();
 						}
 
@@ -209,7 +236,7 @@ public class FrontendHandlerProvider extends ChannelInboundHandlerAdapter implem
 			}
 		});
 
-		return deferred.getPromise();
+		return promisedFuture;
 	}
 
 	@Override
@@ -236,8 +263,11 @@ public class FrontendHandlerProvider extends ChannelInboundHandlerAdapter implem
 								ctx.channel().read();
 								System.out.println("Wrote outbound message successfully");
 							} else {
-								future.channel().close();
 								System.out.println("Did not write outbound message successfully!");
+								future.cause().printStackTrace();
+								
+								future.channel().close();
+								
 							}
 						}
 					});
@@ -265,7 +295,7 @@ public class FrontendHandlerProvider extends ChannelInboundHandlerAdapter implem
 
 	@Override
 	public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-		System.out.println("Channel read completely");
+		System.out.println("Frontend channel read completely");
 
 	}
 

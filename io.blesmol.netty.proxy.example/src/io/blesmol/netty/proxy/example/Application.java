@@ -1,11 +1,6 @@
 package io.blesmol.netty.proxy.example;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
@@ -19,8 +14,6 @@ import org.osgi.service.component.annotations.Reference;
 
 import io.blesmol.netty.api.ConfigurationUtil;
 import io.blesmol.netty.proxy.api.Configuration;
-import io.blesmol.netty.proxy.api.Property;
-import io.blesmol.netty.proxy.api.ReferenceName;
 
 @Component(immediate = true)
 public class Application {
@@ -52,12 +45,10 @@ public class Application {
 
 //				.of(Configuration.HTTP_CONNECT_PROXY_SERVER_NAME, Configuration.FRONTEND_HANDLER_NAME)
 
-		List<String> factoryPids = Stream.of(Configuration.FRONTEND_HANDLER_PID).collect(Collectors.toList());
-		List<String> handlerNames = Stream.of(Configuration.FRONTEND_HANDLER_NAME).collect(Collectors.toList());
+		List<String> factoryPids = Stream.of(Configuration.HTTP_CONNECT_PROXY_SERVER_PID, Configuration.FRONTEND_HANDLER_PID).collect(Collectors.toList());
+		List<String> handlerNames = Stream.of(Configuration.HTTP_CONNECT_PROXY_SERVER_NAME, Configuration.FRONTEND_HANDLER_NAME).collect(Collectors.toList());
 		
-		String destination = "www.includesecurity.com";
-		int port = 80;
-		configPid = configUtil.createNettyServerConfig(config.appName(), config.hostame(), config.port(), factoryPids, handlerNames, Optional.of(createFrontendHandlerProperties(destination, port)));
+		configPid = configUtil.createNettyServerConfig(config.appName(), config.hostame(), config.port(), factoryPids, handlerNames, Optional.empty());
 
 //		createHttpConnectProxyServer(config);
 
@@ -77,14 +68,6 @@ public class Application {
 //		configuration.update(props);
 //		configurations.add(configuration);
 //	}
-
-	private Map<String, Object> createFrontendHandlerProperties(String hostname, int port) {
-		
-		Map<String, Object> result = new HashMap<>();
-		result.put(Property.FrontendHandler.DESTINATION_HOST, hostname);
-		result.put(Property.FrontendHandler.DESTINATION_PORT, port);
-		return result;
-	}
 	
 	
 //	private String createFrontendHandler(String appName, String hostname, int port) throws Exception {

@@ -32,15 +32,18 @@ public class BackendHandlerProvider extends ChannelInboundHandlerAdapter impleme
 	@Override
 	public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
 		// got our front end channel
-		System.out.println("Received user event");
+		System.out.println("Backend received a user event");
 		if (evt instanceof Channel) {
-			System.out.println("Received frontend channel");
+			System.out.println("Backend received frontend channel via user event");
 			deferredFrontendChannel.resolve((Channel) evt);
 		}
 	}
 
+	
+	
 	@Override
 	public void channelActive(ChannelHandlerContext ctx) {
+		System.out.println("Backend active, reading");
 		ctx.read();
 	}
 	//
@@ -61,18 +64,21 @@ public class BackendHandlerProvider extends ChannelInboundHandlerAdapter impleme
 
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+		System.out.println("Backend reading...");
 		promisedFrontendChannel.getValue().write(msg);
 		System.out.println("Backend read");
 	}
 
 	@Override
 	public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
+		System.out.println("Backend read complete started...");
 		promisedFrontendChannel.getValue().flush();
 		System.out.println("Backend read completely");
 	}
 
 	@Override
 	public void channelInactive(ChannelHandlerContext ctx) {
+		System.out.println("Backend inactive");
 		// FrontendHandlerProvider.closeOnFlush(frontendHandler.connectChannel());
 		try {
 			promisedFrontendChannel.getValue().close();
