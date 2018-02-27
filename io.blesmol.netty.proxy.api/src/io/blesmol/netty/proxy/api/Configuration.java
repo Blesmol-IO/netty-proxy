@@ -8,9 +8,11 @@ public interface Configuration {
 	@interface BackendHandler {
 		String handlerName() default BACKEND_HANDLER_NAME;
 
-		String destinationHost();
+		String appName();
 
-		int destinationPort();
+		String channelId();
+
+		String frontendChannelId();
 	}
 
 	String FRONTEND_HANDLER_PID = "io.blesmol.netty.proxy.api.FrontendHandler";
@@ -19,7 +21,14 @@ public interface Configuration {
 	@interface FrontendHandler {
 		String handlerName() default FRONTEND_HANDLER_NAME;
 
+		String appName();
+
 		String channelId();
+		
+		String[] clientFactoryPids();
+		
+		String[] clientHandlerNames();
+		
 	}
 
 	String HTTP_CONNECT_PROXY_SERVER_PID = "io.blesmol.netty.proxy.api.HttpConnectProxyServer";
@@ -27,6 +36,8 @@ public interface Configuration {
 
 	@interface HttpConnectProxyServer {
 		String handlerName() default HTTP_CONNECT_PROXY_SERVER_NAME;
+
+		String appName();
 
 		String channelId();
 
