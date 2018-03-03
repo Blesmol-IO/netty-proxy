@@ -3,3 +3,4 @@
 /generated/
 .metadata
 build/
+io.blesmol.netty.proxy.dependencies/
