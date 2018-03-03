@@ -15,9 +15,7 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 
 import io.blesmol.netty.api.ConfigurationUtil;
-import io.blesmol.netty.api.Property;
-import io.blesmol.netty.proxy.api.Configuration;
-import io.blesmol.netty.proxy.api.ReferenceName;
+import io.blesmol.netty.proxy.api.ProxyApi;
 
 @Component(immediate = true)
 public class Application {
@@ -41,23 +39,38 @@ public class Application {
 
 	List<org.osgi.service.cm.Configuration> configurations = new CopyOnWriteArrayList<>();
 	List<String> clientAppNames = new CopyOnWriteArrayList<>();
-	
-	private List<String> configPids;
+
+	private final List<String> configPids = new CopyOnWriteArrayList<>();
 
 	@Activate
 	void activate(Config config) throws Exception {
 
-		// Target front ends
-		String frontendEventExecutorGroupTarget = String.format("(&(%s=%s)(%s=%s))", Property.EventExecutorGroup.APP_NAME, config.appName(), Property.EventExecutorGroup.GROUP_NAME, ReferenceName.FrontendHandler.EVENT_EXECUTOR_GROUP);
 		Map<String, Object> extraProperties = new HashMap<>();
-		extraProperties.put(ReferenceName.FrontendHandler.EVENT_EXECUTOR_GROUP_TARGET, frontendEventExecutorGroupTarget);
 
-		List<String> factoryPids = Stream.of(Configuration.HTTP_CONNECT_PROXY_SERVER_PID, Configuration.FRONTEND_HANDLER_PID).collect(Collectors.toList());
-		List<String> handlerNames = Stream.of(Configuration.HTTP_CONNECT_PROXY_SERVER_NAME, Configuration.FRONTEND_HANDLER_NAME).collect(Collectors.toList());
-		
-		// need to create a configuration for app-wide shared event executor group used by frontends
-		configPids.add(configUtil.createEventLoopGroup(config.appName(), ReferenceName.FrontendHandler.EVENT_EXECUTOR_GROUP));
-		configPids.addAll(configUtil.createNettyServer(config.appName(), config.hostame(), config.port(), factoryPids, handlerNames, Optional.empty()));
+		// Non-default properties for http object aggregator
+		extraProperties.put(ProxyApi.HttpObjectAggegator.MAX_CONTENT_LENGTH, 8192);
+
+		// Properties for frontend proxy
+		extraProperties.put(ProxyApi.FrontendHandler.CLIENT_FACTORY_PIDS,
+				new String[] { ProxyApi.HttpClientCodec.PID, ProxyApi.BackendHandler.PID});
+		extraProperties.put(ProxyApi.FrontendHandler.CLIENT_HANDLER_NAMES,
+				new String[] { ProxyApi.HttpClientCodec.NAME, ProxyApi.BackendHandler.NAME });
+
+		List<String> factoryPids = Stream
+				.of(ProxyApi.HttpServerCodec.PID, ProxyApi.HttpObjectAggegator.PID,
+						ProxyApi.HttpDirectProxyHandler.PID, ProxyApi.FrontendHandler.PID)
+				.collect(Collectors.toList());
+		List<String> handlerNames = Stream
+				.of(ProxyApi.HttpServerCodec.NAME, ProxyApi.HttpObjectAggegator.NAME,
+						ProxyApi.HttpDirectProxyHandler.NAME, ProxyApi.FrontendHandler.NAME)
+				.collect(Collectors.toList());
+
+		// need to create a configuration for app-wide shared event executor group used
+		// by frontends
+		// configPids.add(configUtil.createEventLoopGroup(config.appName(),
+		// ReferenceName.FrontendHandler.EVENT_EXECUTOR_GROUP));
+		configPids.addAll(configUtil.createNettyServer(config.appName(), config.hostame(), config.port(), factoryPids,
+				handlerNames, Optional.of(extraProperties)));
 
 	}
 

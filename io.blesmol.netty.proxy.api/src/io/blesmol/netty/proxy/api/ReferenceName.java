@@ -16,5 +16,8 @@ public interface ReferenceName extends io.blesmol.netty.api.ReferenceName {
 		String NETTY_CLIENT_TARGET = NETTY_CLIENT + DOT_TARGET;
 		String EVENT_EXECUTOR_GROUP = "frontendEventExecutorGroup";
 		String EVENT_EXECUTOR_GROUP_TARGET = EVENT_EXECUTOR_GROUP + DOT_TARGET;
+		
+		String BACKEND_CONTEXT = "backendContext";
+		String BACKEND_CONTEXT_TARGET = BACKEND_CONTEXT + DOT_TARGET;
 	}
 }

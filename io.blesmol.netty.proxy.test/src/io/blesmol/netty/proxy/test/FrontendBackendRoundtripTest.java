@@ -25,13 +25,11 @@ import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.cm.ManagedServiceFactory;
 
 import io.blesmol.netty.api.ConfigurationUtil;
-import io.blesmol.netty.proxy.api.Configuration;
-import io.blesmol.netty.proxy.api.Property;
-import io.blesmol.netty.proxy.api.ReferenceName;
+import io.blesmol.netty.proxy.api.ProxyApi;
 import io.blesmol.netty.test.RoundtripClientServerTest.LatchTestClientHandler;
 import io.blesmol.netty.test.RoundtripClientServerTest.LatchTestServerHandler;
-import io.blesmol.netty.test.RoundtripClientServerTest.RoundtripTestChannelHandlerFactory;
 import io.blesmol.netty.test.TestUtils;
+import io.blesmol.netty.test.TestUtils.LatchTestChannelHandlerFactory;
 import io.blesmol.netty.test.TestUtils.TestChannelHandlerFactory;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -76,7 +74,7 @@ public class FrontendBackendRoundtripTest {
 				serverHostname, serverPort, Arrays.asList(serverFactoryPid), Arrays.asList("testServerHandler"), Optional.empty());
 		Hashtable<String, Object> serverHandlerProps = new Hashtable<>();
 		CountDownLatch serverLatch = new CountDownLatch(1);
-		RoundtripTestChannelHandlerFactory serverHandlerFactory = new RoundtripTestChannelHandlerFactory(context,
+		LatchTestChannelHandlerFactory serverHandlerFactory = new LatchTestChannelHandlerFactory(context,
 				LatchTestServerHandler.class, serverLatch);
 		serverHandlerProps.put(Constants.SERVICE_PID, serverFactoryPid);
 		ServiceRegistration<ManagedServiceFactory> serverRegistration = context
@@ -98,39 +96,39 @@ public class FrontendBackendRoundtripTest {
 
 		// Target the FE & BE event executor groups, which is used for async req/res processing
 		// And create an event executor group for them
-		String frontendEventExecutorGroupTarget = String.format("(&(%s=%s)(%s=%s))", Property.EventExecutorGroup.APP_NAME, proxyAppName, Property.EventExecutorGroup.GROUP_NAME, ReferenceName.FrontendHandler.EVENT_EXECUTOR_GROUP);
-		extraProperties.put(ReferenceName.FrontendHandler.EVENT_EXECUTOR_GROUP_TARGET, frontendEventExecutorGroupTarget);
-		configPids.add(configUtil.createEventExecutorGroup(proxyAppName, ReferenceName.FrontendHandler.EVENT_EXECUTOR_GROUP));
+//		String frontendEventExecutorGroupTarget = String.format("(&(%s=%s)(%s=%s))", Property.EventExecutorGroup.APP_NAME, proxyAppName, Property.EventExecutorGroup.GROUP_NAME, ReferenceName.FrontendHandler.EVENT_EXECUTOR_GROUP);
+//		extraProperties.put(ReferenceName.FrontendHandler.EVENT_EXECUTOR_GROUP_TARGET, frontendEventExecutorGroupTarget);
+//		configPids.add(configUtil.createEventExecutorGroup(proxyAppName, ReferenceName.FrontendHandler.EVENT_EXECUTOR_GROUP));
 
-		extraProperties.put(Property.FrontendHandler.CLIENT_FACTORY_PIDS,
-				new String[] { Configuration.BACKEND_HANDLER_PID });
-		extraProperties.put(Property.FrontendHandler.CLIENT_HANDLER_NAMES,
-				new String[] { Configuration.BACKEND_HANDLER_NAME });
-		List<String> proxyFactoryPids = Arrays.asList(proxyShimFactoryPid, Configuration.FRONTEND_HANDLER_PID);
-		List<String> proxyFactoryHandlerNames = Arrays.asList("proxyShimHandler", Configuration.FRONTEND_HANDLER_NAME);
+		extraProperties.put(ProxyApi.FrontendHandler.CLIENT_FACTORY_PIDS,
+				new String[] { ProxyApi.BackendHandler.PID});
+		extraProperties.put(ProxyApi.FrontendHandler.CLIENT_HANDLER_NAMES,
+				new String[] { ProxyApi.BackendHandler.NAME});
+		List<String> proxyFactoryPids = Arrays.asList(proxyShimFactoryPid, ProxyApi.FrontendHandler.PID);
+		List<String> proxyFactoryHandlerNames = Arrays.asList("proxyShimHandler", ProxyApi.FrontendHandler.NAME);
 		configPids.addAll(configUtil.createNettyServer(proxyAppName,
 				"localhost", proxiedPort, proxyFactoryPids, proxyFactoryHandlerNames, Optional.of(extraProperties)));
 
 		// Then register managed service factory for client handler, which will be
 		// called
 		Hashtable<String, Object> clientHandlerProps = new Hashtable<>();
-		CountDownLatch clientLatch = new CountDownLatch(2);
-		RoundtripTestChannelHandlerFactory clientHandlerFactory = new RoundtripTestChannelHandlerFactory(context,
+		CountDownLatch clientLatch = new CountDownLatch(1);
+		LatchTestChannelHandlerFactory clientHandlerFactory = new LatchTestChannelHandlerFactory(context,
 				LatchTestClientHandler.class, clientLatch);
 		clientHandlerProps.put(Constants.SERVICE_PID, clientFactoryPid);
 		ServiceRegistration<ManagedServiceFactory> clientRegistration = context
 				.registerService(ManagedServiceFactory.class, clientHandlerFactory, clientHandlerProps);
 
 		
-		// And configure client
+		// And configure client, not shutting down its event loops
 		configPids.addAll(configUtil.createNettyClient(FrontendBackendRoundtripTest.class.getName() + ":client",
 				proxyHostname, proxiedPort, Arrays.asList(clientFactoryPid), Arrays.asList("testClientHandler"),
-				Optional.empty(), Optional.empty()));
+				Optional.empty(), Optional.empty(), Optional.of(false)));
 
 		// TODO: 2 osgi handlers available at time of break point. should be more!
 
-		assertTrue(serverLatch.await(3, TimeUnit.SECONDS));
-		assertTrue(clientLatch.await(4, TimeUnit.SECONDS));
+		assertTrue(serverLatch.await(5, TimeUnit.SECONDS));
+		assertTrue(clientLatch.await(5, TimeUnit.SECONDS));
 
 		// Cleanup
 		serverRegistration.unregister();

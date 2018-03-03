@@ -3,7 +3,8 @@
 	osgi.core;version=6.0,\
 	osgi.cmpn;version=6.0,\
 	io.blesmol.netty.api;version=0.1,\
-	io.blesmol.netty.proxy.api;version=latest
+	io.blesmol.netty.proxy.api;version=latest,\
+	io.netty.common;version=4.1
 
 -testpath: \
 	${junit}
@@ -17,7 +18,9 @@ Private-Package: io.blesmol.netty.proxy.example
 	osgi.identity;filter:='(osgi.identity=io.blesmol.netty.proxy.example)',\
 	osgi.identity;filter:='(osgi.identity=io.blesmol.netty.proxy.provider)',\
 	osgi.identity;filter:='(&(osgi.identity=org.apache.felix.gogo.command)(version>=1.0.2))',\
-	osgi.identity;filter:='(&(osgi.identity=org.apache.felix.gogo.runtime)(version>=1.0.10))'
+	osgi.identity;filter:='(&(osgi.identity=org.apache.felix.gogo.runtime)(version>=1.0.10))',\
+	osgi.identity;filter:='(&(osgi.identity=org.ops4j.pax.logging.pax-logging-api)(version>=1.10.1))',\
+	osgi.identity;filter:='(&(osgi.identity=org.ops4j.pax.logging.pax-logging-service)(version>=1.10.1))'
 -runfw: org.apache.felix.framework;version='[5.6.10,5.6.10]'
 -runee: JavaSE-1.8
 -runbundles: \
