@@ -10,7 +10,9 @@
 	io.blesmol.netty.proxy.api;version=latest,\
 	io.blesmol.netty.api;version=0.1,\
 	io.netty.codec-http;version=4.1,\
-	io.netty.handler-proxy;version=4.1
+	io.netty.handler-proxy;version=4.1,\
+	io.blesmol.netty.proxy.handler;version=latest,\
+	slf4j.api;version=1.7
 
 -testpath: \
 	${junit}

@@ -1,7 +1,10 @@
 package io.blesmol.netty.proxy.api;
 
-public interface ProxyApi {
+import io.blesmol.netty.api.NettyApi;
 
+public interface ProxyProviderApi extends NettyApi {
+
+	String CUSTOM_PID_PREFIX = "%s.%s-";
 	// TODO: Make NettyApi and use values from there
 	@interface BackendHandler {
 		String PID = "io.blesmol.netty.proxy.api.BackendHandler";
@@ -9,24 +12,52 @@ public interface ProxyApi {
 
 		String handlerName() default NAME;
 
+		String APP_NAME = NettyApi.APP_NAME;
 		String appName();
 
-		String channelId();
+		String INET_HOST = NettyApi.INET_HOST;
+		String inetHost();
 
-		String FRONTEND_CHANNEL_ID = "frontendChannelId";
-		String frontendChannelId();
+		String INET_PORT = NettyApi.INET_PORT;
+		int inetPort();
+
+		String CHANNEL_ID = "channelId";
+		String channelId();
+		
+		String FRONTEND_SERVICE_PID = "frontendServicePid";
+		String frontendServicePid();
 	}
 
+	/**
+	 * Frontend handlers can work with mulitple channels, so do not include channel ID as property
+	 */
 	@interface FrontendHandler {
 		String PID = "io.blesmol.netty.proxy.api.FrontendHandler";
-		String NAME = "blesmolFrontendHandler";		
+		String NAME = "blesmolFrontendHandler";
 		
+		/**
+		 * Custom pid prefix used when registering channel event loops
+		 */
+		String EVENT_LOOP_GROUP_ID_PREFIX = String.format(CUSTOM_PID_PREFIX, FrontendHandler.class.getName(), NettyApi.Bootstrap.Reference.EVENT_LOOP_GROUP);
+		
+		/**
+		 * Custom pid prefix used when registering channels
+		 */
+		String CHANNEL_PID_PREFIX = String.format(CUSTOM_PID_PREFIX, FrontendHandler.class.getName(), ReferenceName.BackendHandler.FRONTEND_CHANNEL);
 
 		String handlerName() default NAME;
 
+		String APP_NAME = NettyApi.APP_NAME;
+
 		String appName();
 
-		String channelId();
+		String INET_HOST = NettyApi.INET_HOST;
+
+		String inetHost();
+
+		String INET_PORT = NettyApi.INET_PORT;
+
+		int inetPort();
 
 		String CLIENT_FACTORY_PIDS = "clientFactoryPids";
 		String[] clientFactoryPids();
@@ -35,7 +66,6 @@ public interface ProxyApi {
 		String[] clientHandlerNames();
 
 	}
-
 
 	@interface HttpDirectProxyHandler {
 		String PID = "io.blesmol.netty.proxy.api.HttpDirectProxyHandler";
@@ -49,7 +79,15 @@ public interface ProxyApi {
 	}
 
 	@interface ChannelHandlerContext {
-		String CHANNEL_ID = "channelId";
+		
+		// Hack: often uses channel ID as app name
+		String APP_NAME = NettyApi.APP_NAME;
+		
+		String INET_HOST = NettyApi.INET_HOST;
+		
+		String INET_PORT = NettyApi.INET_PORT;
+		
+		String SERVER_APP_NAME = "serverAppName";
 	}
 
 	// TODO: move below to codec API

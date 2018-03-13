@@ -39,35 +39,35 @@ Private-Package: io.blesmol.netty.proxy.test
 -runvm: -ea
 -runee: JavaSE-1.8
 -runrequires: \
+	osgi.identity;filter:='(&(osgi.identity=org.ops4j.pax.logging.pax-logging-service)(version>=1.10.1))',\
 	osgi.identity;filter:='(osgi.identity=io.blesmol.netty.proxy.test)',\
-	osgi.identity;filter:='(&(osgi.identity=org.apache.felix.gogo.command)(version>=1.0.2))',\
-	osgi.identity;filter:='(&(osgi.identity=org.apache.felix.gogo.runtime)(version>=1.0.10))',\
-	osgi.identity;filter:='(&(osgi.identity=io.blesmol.netty.provider)(version>=0.1.0))',\
-	osgi.identity;filter:='(&(osgi.identity=org.apache.felix.gogo.shell)(version>=1.0.0))',\
 	osgi.identity;filter:='(osgi.identity=io.blesmol.netty.proxy.provider)',\
-	osgi.identity;filter:='(&(osgi.identity=org.ops4j.pax.logging.pax-logging-api)(version>=1.10.1))',\
-	osgi.identity;filter:='(&(osgi.identity=org.ops4j.pax.logging.pax-logging-service)(version>=1.10.1))'
+	osgi.identity;filter:='(osgi.identity=io.blesmol.netty.provider)',\
+	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)',\
+	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.runtime)',\
+	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.command)'
 -runbundles: \
+	org.apache.felix.configadmin;version='[1.8.16,1.8.17)',\
+	org.ops4j.pax.logging.pax-logging-api;version='[1.10.1,1.10.2)',\
+	org.ops4j.pax.logging.pax-logging-service;version='[1.10.1,1.10.2)',\
+	io.blesmol.netty.proxy.api;version=snapshot,\
+	io.blesmol.netty.proxy.handler;version=snapshot,\
+	io.blesmol.netty.proxy.provider;version=snapshot,\
+	io.netty.buffer;version='[4.1.20,4.1.21)',\
+	io.netty.codec;version='[4.1.20,4.1.21)',\
+	io.netty.codec-http;version='[4.1.20,4.1.21)',\
+	io.netty.common;version='[4.1.20,4.1.21)',\
+	io.netty.resolver;version='[4.1.20,4.1.21)',\
+	io.netty.transport;version='[4.1.20,4.1.21)',\
+	org.apache.felix.gogo.command;version='[1.0.2,1.0.3)',\
+	org.apache.felix.gogo.runtime;version='[1.0.10,1.0.11)',\
+	org.apache.felix.gogo.shell;version='[1.0.0,1.0.1)',\
+	org.apache.felix.scr;version='[2.0.14,2.0.15)',\
 	io.blesmol.netty.proxy.test;version=snapshot,\
+	io.blesmol.netty.test;version='[0.1.0,0.1.1)',\
 	net.bytebuddy.byte-buddy;version='[1.7.10,1.7.11)',\
 	net.bytebuddy.byte-buddy-agent;version='[1.7.10,1.7.11)',\
 	org.apache.servicemix.bundles.junit;version='[4.12.0,4.12.1)',\
 	org.mockito.mockito-core;version='[2.13.0,2.13.1)',\
 	org.objenesis;version='[2.6.0,2.6.1)',\
-	io.blesmol.netty.test;version='[0.1.0,0.1.1)',\
-	io.netty.buffer;version='[4.1.20,4.1.21)',\
-	io.netty.common;version='[4.1.20,4.1.21)',\
-	io.netty.resolver;version='[4.1.20,4.1.21)',\
-	io.netty.transport;version='[4.1.20,4.1.21)',\
-	org.apache.felix.configadmin;version='[1.8.16,1.8.17)',\
-	org.apache.felix.gogo.command;version='[1.0.2,1.0.3)',\
-	org.apache.felix.gogo.runtime;version='[1.0.10,1.0.11)',\
-	org.apache.felix.scr;version='[2.0.14,2.0.15)',\
-	io.blesmol.netty.provider;version='[0.1.0,0.1.1)',\
-	org.apache.felix.gogo.shell;version='[1.0.0,1.0.1)',\
-	io.blesmol.netty.proxy.api;version=snapshot,\
-	io.blesmol.netty.proxy.provider;version=snapshot,\
-	io.netty.codec;version='[4.1.20,4.1.21)',\
-	io.netty.codec-http;version='[4.1.20,4.1.21)',\
-	org.ops4j.pax.logging.pax-logging-api;version='[1.10.1,1.10.2)',\
-	org.ops4j.pax.logging.pax-logging-service;version='[1.10.1,1.10.2)'
+	io.blesmol.netty.provider;version='[0.1.0,0.1.1)'

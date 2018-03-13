@@ -6,7 +6,7 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
 
-import io.blesmol.netty.proxy.api.ProxyApi;
+import io.blesmol.netty.proxy.api.ProxyProviderApi;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
@@ -16,7 +16,7 @@ import io.netty.handler.codec.http.HttpClientUpgradeHandler;
 import io.netty.handler.codec.http.HttpRequestEncoder;
 import io.netty.handler.codec.http.HttpResponseDecoder;
 
-@Component(configurationPid = ProxyApi.HttpClientCodec.PID, configurationPolicy = ConfigurationPolicy.REQUIRE, service = ChannelHandler.class)
+@Component(configurationPid = ProxyProviderApi.HttpClientCodec.PID, configurationPolicy = ConfigurationPolicy.REQUIRE, service = ChannelHandler.class)
 public class HttpClientCodecProvider extends CombinedChannelDuplexHandler<HttpResponseDecoder, HttpRequestEncoder>
 		implements HttpClientUpgradeHandler.SourceCodec {
 
@@ -24,7 +24,7 @@ public class HttpClientCodecProvider extends CombinedChannelDuplexHandler<HttpRe
 	private HttpClientCodec delegate;
 
 	@Activate
-	void activate(ProxyApi.HttpClientCodec config) {
+	void activate(ProxyProviderApi.HttpClientCodec config) {
 		delegate = new HttpClientCodec(config.maxInitialLineLength(), config.maxHeaderSize(), config.maxChunkSize(),
 				config.failOnMissingResponse(), config.validateHeaders(), config.parseHttpAfterConnectRequest());
 	}

@@ -15,7 +15,7 @@ import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 
 import io.blesmol.netty.api.ConfigurationUtil;
-import io.blesmol.netty.proxy.api.ProxyApi;
+import io.blesmol.netty.proxy.api.ProxyProviderApi;
 
 @Component(immediate = true)
 public class Application {
@@ -48,21 +48,21 @@ public class Application {
 		Map<String, Object> extraProperties = new HashMap<>();
 
 		// Non-default properties for http object aggregator
-		extraProperties.put(ProxyApi.HttpObjectAggegator.MAX_CONTENT_LENGTH, 8192);
+		extraProperties.put(ProxyProviderApi.HttpObjectAggegator.MAX_CONTENT_LENGTH, 8192);
 
 		// Properties for frontend proxy
-		extraProperties.put(ProxyApi.FrontendHandler.CLIENT_FACTORY_PIDS,
-				new String[] { ProxyApi.HttpClientCodec.PID, ProxyApi.BackendHandler.PID});
-		extraProperties.put(ProxyApi.FrontendHandler.CLIENT_HANDLER_NAMES,
-				new String[] { ProxyApi.HttpClientCodec.NAME, ProxyApi.BackendHandler.NAME });
+		extraProperties.put(ProxyProviderApi.FrontendHandler.CLIENT_FACTORY_PIDS,
+				new String[] { ProxyProviderApi.HttpClientCodec.PID, ProxyProviderApi.BackendHandler.PID});
+		extraProperties.put(ProxyProviderApi.FrontendHandler.CLIENT_HANDLER_NAMES,
+				new String[] { ProxyProviderApi.HttpClientCodec.NAME, ProxyProviderApi.BackendHandler.NAME });
 
 		List<String> factoryPids = Stream
-				.of(ProxyApi.HttpServerCodec.PID, ProxyApi.HttpObjectAggegator.PID,
-						ProxyApi.HttpDirectProxyHandler.PID, ProxyApi.FrontendHandler.PID)
+				.of(ProxyProviderApi.HttpServerCodec.PID, ProxyProviderApi.HttpObjectAggegator.PID,
+						ProxyProviderApi.HttpDirectProxyHandler.PID, ProxyProviderApi.FrontendHandler.PID)
 				.collect(Collectors.toList());
 		List<String> handlerNames = Stream
-				.of(ProxyApi.HttpServerCodec.NAME, ProxyApi.HttpObjectAggegator.NAME,
-						ProxyApi.HttpDirectProxyHandler.NAME, ProxyApi.FrontendHandler.NAME)
+				.of(ProxyProviderApi.HttpServerCodec.NAME, ProxyProviderApi.HttpObjectAggegator.NAME,
+						ProxyProviderApi.HttpDirectProxyHandler.NAME, ProxyProviderApi.FrontendHandler.NAME)
 				.collect(Collectors.toList());
 
 		// need to create a configuration for app-wide shared event executor group used

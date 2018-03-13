@@ -2,7 +2,10 @@
 	osgi.annotation;version=6.0.1,\
 	io.blesmol.netty.api;version=0.1,\
 	io.netty.transport;version=4.1,\
-	osgi.cmpn;version=6.0
+	osgi.cmpn;version=6.0,\
+	io.netty.common;version=4.1,\
+	io.netty.buffer;version=4.1,\
+	slf4j.api;version=1.7
 -baseline: *
 javac.source: 1.8
 javac.target: 1.8

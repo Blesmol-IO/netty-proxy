@@ -25,7 +25,7 @@ import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.cm.ManagedServiceFactory;
 
 import io.blesmol.netty.api.ConfigurationUtil;
-import io.blesmol.netty.proxy.api.ProxyApi;
+import io.blesmol.netty.proxy.api.ProxyProviderApi;
 import io.blesmol.netty.test.RoundtripClientServerTest.LatchTestClientHandler;
 import io.blesmol.netty.test.RoundtripClientServerTest.LatchTestServerHandler;
 import io.blesmol.netty.test.TestUtils;
@@ -100,12 +100,12 @@ public class FrontendBackendRoundtripTest {
 //		extraProperties.put(ReferenceName.FrontendHandler.EVENT_EXECUTOR_GROUP_TARGET, frontendEventExecutorGroupTarget);
 //		configPids.add(configUtil.createEventExecutorGroup(proxyAppName, ReferenceName.FrontendHandler.EVENT_EXECUTOR_GROUP));
 
-		extraProperties.put(ProxyApi.FrontendHandler.CLIENT_FACTORY_PIDS,
-				new String[] { ProxyApi.BackendHandler.PID});
-		extraProperties.put(ProxyApi.FrontendHandler.CLIENT_HANDLER_NAMES,
-				new String[] { ProxyApi.BackendHandler.NAME});
-		List<String> proxyFactoryPids = Arrays.asList(proxyShimFactoryPid, ProxyApi.FrontendHandler.PID);
-		List<String> proxyFactoryHandlerNames = Arrays.asList("proxyShimHandler", ProxyApi.FrontendHandler.NAME);
+		extraProperties.put(ProxyProviderApi.FrontendHandler.CLIENT_FACTORY_PIDS,
+				new String[] { ProxyProviderApi.BackendHandler.PID});
+		extraProperties.put(ProxyProviderApi.FrontendHandler.CLIENT_HANDLER_NAMES,
+				new String[] { ProxyProviderApi.BackendHandler.NAME});
+		List<String> proxyFactoryPids = Arrays.asList(proxyShimFactoryPid, ProxyProviderApi.FrontendHandler.PID);
+		List<String> proxyFactoryHandlerNames = Arrays.asList("proxyShimHandler", ProxyProviderApi.FrontendHandler.NAME);
 		configPids.addAll(configUtil.createNettyServer(proxyAppName,
 				"localhost", proxiedPort, proxyFactoryPids, proxyFactoryHandlerNames, Optional.of(extraProperties)));
 

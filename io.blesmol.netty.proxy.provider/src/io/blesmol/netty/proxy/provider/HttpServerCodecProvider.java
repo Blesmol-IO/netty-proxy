@@ -6,7 +6,7 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
 
-import io.blesmol.netty.proxy.api.ProxyApi;
+import io.blesmol.netty.proxy.api.ProxyProviderApi;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
@@ -16,21 +16,21 @@ import io.netty.handler.codec.http.HttpResponseEncoder;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.HttpServerUpgradeHandler;
 
-@Component(configurationPid = ProxyApi.HttpServerCodec.PID, configurationPolicy = ConfigurationPolicy.REQUIRE, service = ChannelHandler.class)
+@Component(configurationPid = ProxyProviderApi.HttpServerCodec.PID, configurationPolicy = ConfigurationPolicy.REQUIRE, service = ChannelHandler.class)
 public class HttpServerCodecProvider extends CombinedChannelDuplexHandler<HttpRequestDecoder, HttpResponseEncoder>
 		implements HttpServerUpgradeHandler.SourceCodec {
 
 	private HttpServerCodec delegate;
 
 	@Activate
-	void activate(ProxyApi.HttpServerCodec config) {
+	void activate(ProxyProviderApi.HttpServerCodec config) {
 		delegate = new HttpServerCodec(config.maxInitialLineLength(), config.maxHeaderSize(), config.maxChunkSize(),
 				config.validateHeaders(), config.initialBufferSize());
 	}
 
 	@Override
 	public void upgradeFrom(ChannelHandlerContext ctx) {
-		ctx.pipeline().remove(ProxyApi.HttpServerCodec.NAME);
+		ctx.pipeline().remove(ProxyProviderApi.HttpServerCodec.NAME);
 	}
 
 	@Override

@@ -4,19 +4,19 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ConfigurationPolicy;
 
-import io.blesmol.netty.proxy.api.ProxyApi;
+import io.blesmol.netty.proxy.api.ProxyProviderApi;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 
-@Component(configurationPid = ProxyApi.HttpObjectAggegator.PID, configurationPolicy = ConfigurationPolicy.REQUIRE, service = ChannelHandler.class)
+@Component(configurationPid = ProxyProviderApi.HttpObjectAggegator.PID, configurationPolicy = ConfigurationPolicy.REQUIRE, service = ChannelHandler.class)
 public class HttpObjectAggegatorProvider extends ChannelInboundHandlerAdapter {
 
 	private HttpObjectAggregator delegate;
 	
 	@Activate
-	void activate(ProxyApi.HttpObjectAggegator config) {
+	void activate(ProxyProviderApi.HttpObjectAggegator config) {
 		delegate = new HttpObjectAggregator(config.maxContentLength(), config.closeOnExpectationFailed());
 	}
 
